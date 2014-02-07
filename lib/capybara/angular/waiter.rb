@@ -15,7 +15,7 @@ module Capybara
         start = Time.now
         until ready?
           timeout! if timeout?(start)
-          sleep(0.01)
+          sleep(0.1)
 
           # try again due to bugs in phantomjs
           setup_ready
@@ -48,7 +48,7 @@ module Capybara
 
       def setup_ready
         page.execute_script <<-JS
-          window.angularReady = false;
+          window.angularReady = window.angularReady || false;
 
           if (typeof angular !== 'undefined') {
             angular.element(document).ready(function () {
