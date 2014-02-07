@@ -16,6 +16,9 @@ module Capybara
         until ready?
           timeout! if timeout?(start)
           sleep(0.01)
+
+          # try again due to bugs in phantomjs
+          setup_ready
         end
       end
 
@@ -46,14 +49,19 @@ module Capybara
       def setup_ready
         page.execute_script <<-JS
           window.angularReady = false;
-          var app = angular.element(document.querySelector('[ng-app]'));
-          var injector = app.injector();
 
-          injector.invoke(function($browser) {
-            $browser.notifyWhenNoOutstandingRequests(function() {
-              window.angularReady = true;
+          if (typeof angular !== 'undefined') {
+            angular.element(document).ready(function () {
+              var app = angular.element(document.querySelector('[ng-app]'));
+              var injector = app.injector();
+
+              injector.invoke(function($browser) {
+                $browser.notifyWhenNoOutstandingRequests(function() {
+                  window.angularReady = true;
+                });
+              });
             });
-          });
+          }
         JS
       end
     end
